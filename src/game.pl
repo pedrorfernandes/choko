@@ -12,6 +12,8 @@ user:runtime_entry(start) :-
         server.
 
 server:-
+        now(Time),
+        setrand(Time),
         port(Port),
         socket_server_open(Port,Socket),
         socket_server_accept(Socket, _Client, Stream, [type(text)]),
@@ -488,8 +490,8 @@ noMovesPossible(Player, Board, NewBoard, PlayerUnusedPieces, PlayerNewUnusedPiec
         copy(Board, NewBoard),
         PlayerNewUnusedPieces = PlayerUnusedPieces,
         versus(Player, Enemy),
-        NewDropInitiative = Enemy,
-        pressEnter.
+        NewDropInitiative = Enemy.
+        %pressEnter.
 
 inputPosition(Row, Column):-
         getRow(Row),
@@ -605,12 +607,19 @@ playerTurn(Player, Board, NewBoard, PlayerUnusedPieces, PlayerNewUnusedPieces, E
 
 % Hard will do a minimax, calculating the best move 3 steps ahead
 playerTurn(Player, Board, NewBoard, PlayerUnusedPieces, PlayerNewUnusedPieces, EnemyUnusedPieces, DropInitiative, NewDropInitiative, computer, hard, BestMove) :-
-        minimax(Board, BestMove, _Val, 2, Player, PlayerUnusedPieces, EnemyUnusedPieces, DropInitiative),
-        !, nonvar(BestMove) -> % check if minimax returned a best move successfully
+        versus(Player, Enemy),
+        count(Enemy, Board, EnemyCount),
+        ( EnemyCount =< 2 , EnemyUnusedPieces =:= 0 ->
+            playerTurn(Player, Board, NewBoard, PlayerUnusedPieces, PlayerNewUnusedPieces, EnemyUnusedPieces, DropInitiative, NewDropInitiative, computer, medium, BestMove)
+            ;
+            
+            minimax(Board, BestMove, _Val, 2, Player, PlayerUnusedPieces, EnemyUnusedPieces, DropInitiative),
+            !, nonvar(BestMove) -> % check if minimax returned a best move successfully
                 % printMove(BestMove),
                 movePiece(Player, BestMove, Board, NewBoard, PlayerUnusedPieces, PlayerNewUnusedPieces, DropInitiative, NewDropInitiative)
         ;
-        noMovesPossible(Player, Board, NewBoard, PlayerUnusedPieces, PlayerNewUnusedPieces, DropInitiative, NewDropInitiative).
+        noMovesPossible(Player, Board, NewBoard, PlayerUnusedPieces, PlayerNewUnusedPieces, DropInitiative, NewDropInitiative)
+        ).
 
 % BestMove is used by medium difficulty to find the best move in the current board (not thinking any moves ahead).
 % It is closely related to best/9 used by minimax
