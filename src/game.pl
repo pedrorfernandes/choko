@@ -44,6 +44,10 @@ server_input(gameOver(Board, Player, PlayerUnusedPieces, EnemyUnusedPieces), Win
         gameOver(Player, Board, PlayerUnusedPieces, EnemyUnusedPieces, Winner), !.
 server_input(getPieceMoves(Player, Piece, Board, DropInitiative), [Moves, Attacks, Enemies]):-
         getPieceMoves(Player, Piece, Board, Moves, Attacks, Enemies, DropInitiative) , !.
+server_input(getAllMoves(Player, Board, PlayerUnusedPieces, DropInitiative), Moves):-
+        getAllMoves(Player, Board, Moves, PlayerUnusedPieces, DropInitiative), !
+        ;
+        copy([], Moves), !.
 server_input(bye, ok):-!.
 server_input(end_of_file, ok):-!.
 server_input(_, invalid) :- !.
@@ -486,7 +490,7 @@ validAttack(Player, Row, Column, NewRow, NewColumn, EnemyRow, EnemyColumn, Board
 
 % If no moves are possible, the player is prompted to aknowledge this, press enter and skip his turn
 noMovesPossible(Player, Board, NewBoard, PlayerUnusedPieces, PlayerNewUnusedPieces, _DropInitiative, NewDropInitiative):-
-        print('No move is possible!! Skipping player '), print(Player), print(' turn.'), nl,
+        %print('No move is possible!! Skipping player '), print(Player), print(' turn.'), nl,
         copy(Board, NewBoard),
         PlayerNewUnusedPieces = PlayerUnusedPieces,
         versus(Player, Enemy),
